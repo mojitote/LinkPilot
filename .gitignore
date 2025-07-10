@@ -140,3 +140,9 @@ vite.config.ts.timestamp-*
 
 # local env files
 .env*
+
+# Cursor
+.cursor/
+
+# VSCode
+.vscode/

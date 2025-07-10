@@ -1,0 +1,16 @@
+☐ 
+Todo:
+  Day 1:
+  ☐ 1.	pages/api/contact/fetch.js
+  🔹 输入：{ url }
+  🔹 输出：{ name, title, company, avatar, education }
+  🔹 使用 lib/scrape.js 抓取数据
+  ☐ 	2.	pages/api/contact/add.js
+  🔹 输入：完整 profile 信息
+  🔹 写入 MongoDB（用 lib/db.js）
+  🔹 返回保存状态或 _id
+  ☐ 	3.	pages/api/message/generate.js
+  🔹 输入：{ contact info, tone }
+  🔹 调用 GPT API（用 lib/openai.js）
+  🔹 返回 Message 文本
+  ☐ 

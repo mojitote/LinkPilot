@@ -153,3 +153,8 @@ vite.config.ts.timestamp-*
 #docs
 .docs/
 
+#linkedin-scraper-api.venv
+linkedin-scraper-api/venv/
+
+#temp
+.temp-linkedin-scraper/

@@ -1,0 +1,38 @@
+☐ 
+Todo:
+  Day 1:
+  1.	pages/api/contact/fetch.js
+  🔹 输入：{ url }
+  🔹 输出：{ name, title, company, avatar, education }
+  🔹 使用 lib/scrape.js 抓取数据
+  	2.	pages/api/contact/add.js
+  🔹 输入：完整 profile 信息
+  🔹 写入 MongoDB（用 lib/db.js）
+  🔹 返回保存状态或 _id
+  	3.	pages/api/message/generate.js
+  🔹 输入：{ contact info, tone }
+  🔹 调用 GPT API（用 lib/openai.js）
+  🔹 返回 Message 文本
+  ☐写完lib里的内容
+  ☐Fork GitHub 上的 drissbri/linkedin-scraper 项目，并修改成一个可以通过 FastAPI 启动的后端服务。
+
+  要求：
+  1. 启动后暴露 POST /scrape 接口，接收 JSON 请求体 { "url": "LinkedIn 链接" }
+  2. 返回的字段格式为：
+     {
+       "name": "...",
+       "title": "...",
+       "company": "...",
+       "education": "...",
+       "avatar": "..." 
+     }
+  3. 使用 Selenium + Chrome Headless 模式抓取
+  4. 保持 Python 项目结构清晰，可通过 curl 本地测试
+
+  Day2：
+  ☐ 改进输出结构为符合linkedin的结构
+  ☐ 2.补充db.js
+  ☐ 3.补充openai.js
+  
+  
+

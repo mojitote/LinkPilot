@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  linkedin-scraper-api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - RELOAD=true
+      - LOG_LEVEL=info
+      - RATE_LIMIT_PER_MINUTE=60
+      - BATCH_SIZE_LIMIT=10
+      - SCRAPER_TIMEOUT=30
+      - SCRAPER_RETRY_ATTEMPTS=3
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:3001
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Add Redis for caching and rate limiting
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+volumes:
+  redis_data: 

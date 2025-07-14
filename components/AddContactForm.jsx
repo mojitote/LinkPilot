@@ -1,107 +1,190 @@
-import React, { useState } from "react";
+// AddContactForm.jsx
+// Modal form to add a new LinkedIn contact
+
+import React, { useState } from 'react';
+import { useChatStore } from '../store/chatStore';
+import ProfileEditForm from './ProfileEditForm';
 
 export default function AddContactForm() {
-  const [url, setUrl] = useState("");
+  const [open, setOpen] = useState(false);
+  const [url, setUrl] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [profile, setProfile] = useState(null);
-  const [saveStatus, setSaveStatus] = useState("");
+  const [showContactEdit, setShowContactEdit] = useState(false);
+  const [scrapedContactData, setScrapedContactData] = useState(null);
+  const [scrapingFailed, setScrapingFailed] = useState(false);
+  const addContact = useChatStore(s => s.addContact);
 
-  // Handle LinkedIn profile fetch
-  async function handleFetch(e) {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setProfile(null);
-    setSaveStatus("");
-    if (!url.trim()) {
-      setError("Please enter a LinkedIn profile URL.");
+    setError('');
+    if (!url.includes('linkedin.com/in/')) {
+      setError('Please enter a valid LinkedIn profile URL');
       return;
     }
     setLoading(true);
+    setScrapingFailed(false);
+    
     try {
-      const res = await fetch("/api/contact/fetch", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      // Call backend to scrape contact
+      const res = await fetch('/api/scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url }),
       });
-      if (!res.ok) throw new Error("Failed to fetch profile.");
-      const data = await res.json();
-      if (!data.name) throw new Error("Could not extract profile info.");
-      setProfile(data);
+      
+      if (!res.ok) {
+        throw new Error('Failed to scrape contact');
+      }
+      
+      const result = await res.json();
+      
+      // Check if scraping was successful
+      if (result.error || !result.data) {
+        setScrapingFailed(true);
+        // Create empty contact data for manual input
+        const emptyContactData = {
+          linkedin_id: url.split('/in/')[1]?.split('/')[0] || '',
+          name: '',
+          avatar_url: '',
+          headline: '',
+          about: '',
+          experience: { positions: [], institutions: [], dates: [] },
+          education: { positions: [], institutions: [], dates: [] }
+        };
+        setScrapedContactData(emptyContactData);
+      } else {
+        setScrapedContactData(result.data || result);
+      }
+      
+      setOpen(false);
+      setShowContactEdit(true);
+      
     } catch (err) {
-      setError(err.message || "Unknown error.");
+      console.error('Scraping error:', err);
+      setScrapingFailed(true);
+      setError('Failed to scrape contact. You can still add the contact manually.');
+      
+      // Create empty contact data for manual input
+      const emptyContactData = {
+        linkedin_id: url.split('/in/')[1]?.split('/')[0] || '',
+        name: '',
+        avatar_url: '',
+        headline: '',
+        about: '',
+        experience: { positions: [], institutions: [], dates: [] },
+        education: { positions: [], institutions: [], dates: [] }
+      };
+      setScrapedContactData(emptyContactData);
+      setOpen(false);
+      setShowContactEdit(true);
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-  // Handle save contact
-  async function handleSave() {
-    setSaveStatus("");
-    setError("");
-    setLoading(true);
+  const handleContactSave = async (contactData) => {
     try {
-      const res = await fetch("/api/contact/add", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...profile, linkedinUrl: url }),
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(contactData),
       });
-      if (!res.ok) throw new Error("Failed to save contact.");
-      setSaveStatus("Contact saved!");
-    } catch (err) {
-      setError(err.message || "Unknown error.");
-    } finally {
-      setLoading(false);
+      if (!res.ok) throw new Error('Failed to save contact');
+      const result = await res.json();
+      addContact(result.data);
+      setShowContactEdit(false);
+      setScrapedContactData(null);
+      setScrapingFailed(false);
+      setUrl('');
+      setError('');
+    } catch (error) {
+      console.error('Error saving contact:', error);
+      throw error;
     }
-  }
+  };
 
   return (
-    <form onSubmit={handleFetch} className="w-full max-w-md bg-white shadow-md rounded-lg p-6 space-y-4">
-      <h2 className="text-xl font-semibold text-gray-900 mb-2">Add LinkedIn Contact</h2>
-      <label htmlFor="linkedin-url" className="block text-gray-700 font-medium mb-1">
-        LinkedIn Profile URL
-      </label>
-      <input
-        id="linkedin-url"
-        type="url"
-        className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
-        placeholder="https://www.linkedin.com/in/username"
-        value={url}
-        onChange={e => setUrl(e.target.value)}
-        required
-        disabled={loading}
-      />
+    <>
       <button
-        type="submit"
-        className="w-full bg-[#0A66C2] text-white px-4 py-2 rounded hover:bg-[#004182] font-medium transition disabled:opacity-60 disabled:cursor-not-allowed mt-2"
-        disabled={loading}
+        className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm"
+        onClick={() => setOpen(true)}
+        title="Add Contact"
       >
-        {loading ? "Fetching..." : "Fetch Profile"}
+        +Contact
       </button>
-      {error && <div className="text-red-600 text-sm mt-2">{error}</div>}
-      {profile && (
-        <div className="mt-6 p-4 bg-gray-50 rounded shadow-sm flex flex-col items-center">
-          {profile.avatar && (
-            <img
-              src={profile.avatar}
-              alt={profile.name}
-              className="w-20 h-20 rounded-full mb-2 border"
-            />
-          )}
-        <div className="text-lg font-bold text-gray-900">{profile.name}</div>
-          <div className="text-gray-700">{profile.title}</div>
-          <div className="text-gray-500">{profile.company}</div>
-          <button
-            type="button"
-            className="mt-4 bg-[#0A66C2] text-white px-4 py-2 rounded hover:bg-[#004182] font-medium transition disabled:opacity-60 disabled:cursor-not-allowed"
-            onClick={handleSave}
-            disabled={loading}
-          >
-            {loading ? "Saving..." : "Save Contact"}
-          </button>
-          {saveStatus && <div className="text-green-600 text-sm mt-2">{saveStatus}</div>}
+      {open && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-30">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
+            <button
+              className="absolute top-2 right-2 text-gray-400 hover:text-gray-700"
+              onClick={() => setOpen(false)}
+              aria-label="Close"
+            >
+              ×
+            </button>
+            <h3 className="text-lg font-semibold mb-4 text-blue-900">Add LinkedIn Contact</h3>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <input
+                type="url"
+                className="w-full border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-blue-500"
+                placeholder="https://linkedin.com/in/target-profile"
+                value={url}
+                onChange={e => setUrl(e.target.value)}
+                required
+              />
+              {error && <div className="text-red-600 text-sm">{error}</div>}
+              <button
+                type="submit"
+                className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+                disabled={loading}
+              >
+                {loading ? 'Adding...' : 'Add Contact'}
+              </button>
+            </form>
+          </div>
         </div>
       )}
-    </form>
+
+      {/* Contact Edit Modal */}
+      {showContactEdit && scrapedContactData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-blue-800">Review & Edit Contact</h2>
+                {scrapingFailed && (
+                  <p className="text-orange-600 text-sm mt-1">
+                    ⚠️ Scraping failed. Please fill in the contact information manually.
+                  </p>
+                )}
+              </div>
+              <button
+                onClick={() => {
+                  setShowContactEdit(false);
+                  setScrapedContactData(null);
+                  setScrapingFailed(false);
+                  setError('');
+                }}
+                className="text-gray-400 hover:text-gray-700"
+              >
+                ×
+              </button>
+            </div>
+            <ProfileEditForm
+              initialValues={scrapedContactData}
+              onSave={handleContactSave}
+              onCancel={() => {
+                setShowContactEdit(false);
+                setScrapedContactData(null);
+                setScrapingFailed(false);
+                setError('');
+              }}
+              mode="contact"
+            />
+          </div>
+        </div>
+      )}
+    </>
   );
 } 

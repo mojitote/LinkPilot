@@ -156,5 +156,19 @@ vite.config.ts.timestamp-*
 #linkedin-scraper-api.venv
 linkedin-scraper-api/venv/
 
+# LinkedIn Scraper API specific ignores
+linkedin-scraper-api/__pycache__/
+linkedin-scraper-api/**/__pycache__/
+linkedin-scraper-api/*.pyc
+linkedin-scraper-api/**/*.pyc
+linkedin-scraper-api/test/htmls/*.html
+linkedin-scraper-api/test/htmls/js/*.json
+linkedin-scraper-api/chromedriver
+linkedin-scraper-api/chromedriver.exe
+linkedin-scraper-api/*.log
+linkedin-scraper-api/logs/
+linkedin-scraper-api/.env
+linkedin-scraper-api/.env.local
+
 #temp
 .temp-linkedin-scraper/

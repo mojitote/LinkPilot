@@ -1,13 +1,13 @@
 from selenium import webdriver
 from time import sleep
-from services.scraping_utils import options, service, search_for_company_name, search_for_company_industry, search_for_company_about, add_session_cookie
+from services.scraping_utils import options, get_chrome_service, search_for_company_name, search_for_company_industry, search_for_company_about, add_session_cookie
 
 
 def scrape_linkedin_company(linkedin_id):
     """Scraping linkedIn company data"""
     try:
         # Setup Selenium WebDriver
-        driver = webdriver.Chrome(service=service,options=options)
+        driver = webdriver.Chrome(service=get_chrome_service(), options=options)
 
         # Load cookies from the file
         add_session_cookie(driver)

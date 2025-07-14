@@ -1,0 +1,482 @@
+Product Requirements Document — LinkPilot v1.0 (MVP)
+
+Last updated: 2025-01-12  Owner: Xinghao Yuan
+
+⸻
+
+0 · Executive Summary
+
+LinkPilot streamlines the workflow "Paste LinkedIn URL → Fetch both users' public data → Generate AI-powered connect message → Manual tweak & copy" in two pages with a LinkedIn-like UI.
+
+Layer	Stack
+Frontend	Next.js 14 (App Router, JSX) · Tailwind CSS · shadcn/ui · Zustand
+Auth	NextAuth.js – GitHub OAuth (+ placeholder LinkedIn OAuth)
+Scraper micro-service	FastAPI · Selenium + XPath · Docker (Render)
+LLM service	Hugging Face Inference API (HuggingFaceH4/zephyr-7b-beta)
+Database	MongoDB Atlas Free (M0)
+CI/CD	Vercel (front end) + Render (back-end Docker)
+
+
+⸻
+
+1 · Goals & KPIs
+
+Metric	Target
+First login → message generated	≤ 30 s
+Profile-scrape success rate	≥ 95 %
+Lighthouse Performance	≥ 90
+Vitest line coverage	≥ 80 %
+Monthly infra cost (HF + Render)	< 5 USD
+
+
+⸻
+
+2 · User Stories (MVP)
+
+#	Role	Story	Acceptance Criteria
+1	Visitor	Lands on home, reads intro, logs in with GitHub	Redirected to /dashboard
+2	New User	Pastes own LinkedIn profile URL and stores it	userProfile saved in DB and store
+3	User	Pastes target profile URL, app scrapes data	Contact card appears in sidebar
+4	User	Clicks Generate, app combines both profiles + prompt, returns AI message	AI bubble displayed in chat pane
+5	User	Edits prompt, regenerates message	New AI bubble replaces previous
+6	User	Copies message and opens LinkedIn manually	Toast "Copied"
+7	User	Sees "Post Generator — Coming Soon" card on top	Click shows toast
+8	User	Scraping fails, sees manual input form	Can complete profile/contact manually
+9	User	Chooses manual input instead of scraping	Can set up profile/contact without LinkedIn URL
+
+
+⸻
+
+3 · Information Architecture
+
+```
+/app
+  /dashboard         # User onboarding, intro, fetch/store own profile
+  /chat              # Main chat UI: contacts, message pane, prompt box
+  /add-contact       # Modal/page for adding a new contact (optional, could be modal only)
+  layout.jsx         # Shared layout (navigation, theme, etc.)
+
+/components
+  Navigation.jsx     # Top nav bar (login/logout, avatar)
+  AddContactForm.jsx # Form/modal for adding/scraping a contact
+  ContactCard.jsx    # Displays a contact in the sidebar
+  MessageModal.jsx   # Modal for message details (optional)
+  Footer.jsx         # App footer
+  MessageBubble.jsx  # Chat bubble (AI/user)
+  PromptBox.jsx      # Textarea + Generate button + prompt chips
+  ProfileSetupModal.jsx # User profile setup with manual input fallback
+  ProfileEditForm.jsx   # Edit profile/contact data (shared component)
+
+/pages/api
+  /auth/[...nextauth].js  # NextAuth configuration
+  /user/scrape.js         # POST { url } → scrape/store user profile
+  /contact/scrape.js      # POST { url } → scrape/store contact
+  /message/generate.js    # POST { contact, prompt, userProfile } → { message }
+
+/store
+  chatStore.js       # Zustand store (userProfile, contacts, messages, loading, customPrompts)
+
+/lib
+  db.js              # MongoDB connection/utilities
+  openai.js          # Hugging Face API integration
+  scrape.js          # Scraper API client
+
+/utils
+  generatePrompt.js  # Prompt template logic
+
+/styles
+  tailwind.css       # Tailwind base styles
+```
+
+**Implementation Notes:**
+- Contact limit: Maximum 10 contacts per user
+- User can upload/change avatar (not just LinkedIn scraped)
+- Messages can be AI-generated or user-created
+- Custom prompts: Users can add their own prompts beyond static ones
+- Post Generator Card: Placeholder only for now
+- Manual input fallback: Users can always input data manually if scraping fails
+
+
+⸻
+
+4 · Functional Requirements
+
+4.1 Authentication
+
+Item	Spec
+Provider	GitHub OAuth (providers.github)
+Session store	JWT (default)
+Protected route	/chat — no session → redirect /dashboard
+LinkedIn OAuth	Placeholder provider, UI hidden
+
+4.2 Dashboard (Home Page)
+
+States
+	1.	Logged-out → logo, tagline, "Login with GitHub", "Explore with Sample Data".
+	2.	Logged-in; no userProfile → profile setup form with LinkedIn URL input + Fetch My Profile button.
+	3.	Logged-in; has userProfile → redirect to /chat automatically.
+
+4.3 Chat Page
+
+Zone	Component	Functional Notes
+Top	Post Generator Card (disabled)	Card + muted button → toast "Coming soon"
+Left	Sidebar	Scroll list of contacts with edit functionality; +Contact button opens AddContactForm.
+Right-Middle	MessagePane	Left bubbles = AI/contact messages; right bubbles = user messages (blue).
+Bottom	InteractionButtons	Send as contact, quick responses, message editing tools.
+Bottom	PromptBox	Textarea + Generate button; underneath, 4 prompt suggestion chips + message editing.
+
+4.4 Profile Setup Flow
+
+Component	Function	Notes
+ProfileSetupModal	User profile setup with scraping and editing	Multi-step modal: URL input → scraping → edit form → save
+LinkedInUrlInput	URL input and validation	Validates LinkedIn profile URLs
+ProfileScrapingLoader	Loading state during scraping	Shows "Fetching your LinkedIn profile..." with spinner
+ProfileEditForm	Edit scraped profile data	Allows editing all scraped fields before saving to database
+ManualInputOption	Manual profile setup	"Create Manually" button for users without LinkedIn
+ScrapingErrorHandler	Handle scraping failures	Shows warning message when scraping fails but still allows editing
+ConfirmSaveButton	Save profile to database	Only saves to database when user clicks "Save" after reviewing
+
+4.5 Contact Management
+
+Component	Function	Notes
+AddContactForm	Initial contact URL input	Modal form for LinkedIn URL
+ContactScrapingLoader	Loading state during contact scraping	Shows "Scraping..." with progress
+ContactEditForm	Edit scraped contact data	Allows editing all scraped fields before adding
+ContactCard	Display contact with edit option	Hover shows edit button, click opens edit form
+ManualInputFallback	Manual contact input	Shows when scraping fails or user chooses manual input
+
+4.6 Settings Page
+
+Component	Function	Notes
+SettingsPage	User profile management	Independent page with profile editing
+ProfileEditForm	Edit user profile data	Same component as profile setup
+SignOutButton	Logout functionality	Integrated in settings page
+
+4.7 Error Handling & Manual Input
+
+Component	Function	Notes
+ScrapingErrorHandler	Handle scraping failures	Shows warning message and manual input option
+PartialDataHandler	Handle partial scraping results	Displays available data and prompts for manual completion
+ManualInputForm	Manual data entry	Full form for entering profile/contact information
+ErrorRecovery	Graceful error recovery	Always provides manual input as fallback option
+ProfileSetupFlow	Multi-step profile setup	URL input → scraping → edit form → database save only on confirm
+ScrapingEditWorkflow	Show scraped data in editable form	Edit form appears only after scraping completes (success or failure)
+ConfirmSaveWorkflow	Save only on user confirmation	Profile data saved to database only when user clicks "Save" button
+
+4.8 AI Generation
+
+Item	Spec
+Provider	Hugging Face Inference API
+Model	zephyr-7b-beta (can swap)
+Env var	HF_API_KEY
+Max tokens	180
+Prompt template	see § 6
+
+4.8.1 Enhanced Message Generation
+
+Component	Function	Notes
+PromptBox	Text input + Generate button + prompt chips	Enhanced with revert functionality and real-time message updates
+MessageInputArea	Message textarea with send button	Listens for generated message updates from PromptBox
+MessageGenerationService	AI-powered message generation	Uses contact info, user profile, chat history, and user prompt
+RevertFunctionality	Revert to original text	"Revert to original text" button appears after generation
+ContextAwareGeneration	Smart message generation	Considers: 1) Contact info, 2) User profile, 3) Chat history, 4) User prompt
+RealTimeUpdates	Live message input updates	Generated text automatically populates message input area
+
+Flow	Steps	Notes
+Message Generation	1. User types prompt → 2. Clicks Generate → 3. System builds context (contact + profile + history) → 4. AI generates message → 5. Message appears in input area → 6. Revert button shows	Context includes shared background and conversation history
+Revert Action	1. User clicks "Revert to original text" → 2. Generated text cleared → 3. Original prompt restored → 4. Revert button hidden	Allows users to discard AI-generated content
+Prompt Chips	1. User clicks prompt chip → 2. Chip text fills prompt input → 3. User can modify → 4. Click Generate	Quick access to common prompt types
+
+4.9 User Profile Setup Flows
+
+Flow	Steps	Notes
+First-time Setup	1. User logs in → 2. Profile setup page → 3. Enter LinkedIn URL → 4. Click "Start Setup" → 5. Modal opens → 6. Choose "Fetch & Auto-Fill" or "Create Manually" → 7. If scraping: loading state → 8. Edit form with scraped/empty data → 9. Click "Save" → 10. Profile saved to DB → 11. Redirect to chat	Edit form only appears after scraping completes
+Scraping Success	1. User enters LinkedIn URL → 2. Clicks "Fetch & Auto-Fill" → 3. Loading spinner shows → 4. Scraping completes → 5. Edit form shows with scraped data → 6. User can edit all fields → 7. User clicks "Save" → 8. Data saved to database	User sees scraped data and can modify before saving
+Scraping Failure	1. User enters LinkedIn URL → 2. Clicks "Fetch & Auto-Fill" → 3. Loading spinner shows → 4. Scraping fails → 5. Warning message shows → 6. Edit form shows with empty data → 7. User fills in manually → 8. User clicks "Save" → 9. Data saved to database	No dead end - user can always complete setup manually
+Manual Setup	1. User clicks "Create Manually" → 2. Edit form shows with empty data → 3. User fills in all fields → 4. User clicks "Save" → 5. Data saved to database	Alternative path for users without LinkedIn or who prefer manual input
+
+
+⸻
+
+5 · Data Model
+
+Scraper response (FastAPI)
+
+Profile Response:
+{
+  "linkedin_id": "string",
+  "name": "string",
+  "avatar_url": "string (optional)",
+  "headline": "string (optional)",
+  "about": "string (optional)",
+  "experience": {
+    "positions": ["string"],
+    "institutions": ["string"],
+    "dates": ["string"]
+  } (optional),
+  "education": {
+    "positions": ["string"],
+    "institutions": ["string"],
+    "dates": ["string"]
+  } (optional),
+  "scraped_at": "datetime"
+}
+
+Company Response:
+{
+  "linkedin_id": "string",
+  "name": "string",
+  "description": "string (optional)",
+  "size": "string (optional)",
+  "founded": "string (optional)",
+  "website": "string (optional)",
+  "scraped_at": "datetime"
+}
+
+Partial Data Response (Error Handling):
+{
+  "linkedin_id": "string",
+  "name": "string (empty if failed)",
+  "avatar_url": "string (empty if failed)",
+  "headline": "string (empty if failed)",
+  "about": "string (empty if failed)",
+  "experience": {
+    "positions": [],
+    "institutions": [],
+    "dates": []
+  },
+  "education": {
+    "positions": [],
+    "institutions": [],
+    "dates": []
+  },
+  "scraped_at": "datetime",
+  "error": "string (error message)",
+  "partial": true
+}
+
+Mongo Collections
+
+// user_profiles
+{
+  _id,
+  ownerId,
+  linkedin_id,
+  name,
+  avatarUrl,
+  headline,
+  about,
+  education: { positions:[], institutions:[], dates:[] },
+  experience: { positions:[], institutions:[], dates:[] },
+  linkedinUrl,
+  scrapedAt,
+  createdAt,
+  updatedAt
+}
+
+// contacts  (targets)
+{
+  _id,
+  ownerId,
+  linkedin_id,
+  name,
+  avatarUrl,
+  headline,
+  about,
+  education: { positions:[], institutions:[], dates:[] },
+  experience: { positions:[], institutions:[], dates:[] },
+  linkedinUrl,
+  scrapedAt,
+  createdAt,
+  updatedAt
+}
+
+// companies (optional - for future use)
+{
+  _id,
+  ownerId,
+  linkedin_id,
+  name,
+  description,
+  size,
+  founded,
+  website,
+  linkedinUrl,
+  scrapedAt,
+  createdAt,
+  updatedAt
+}
+
+// messages
+{ _id, contactId, role:'ai'|'user', content, createdAt }
+
+
+⸻
+
+6 · Prompt Template (HF API)
+
+You are an expert LinkedIn networking assistant.
+
+User background:
+{user_headline}
+Education: {user_edu_positions} at {user_edu_institutions}
+Experience: {user_exp_positions} at {user_exp_institutions}
+
+Target:
+{name} — {headline}
+Education: {edu_positions} at {edu_institutions}
+Experience: {exp_positions} at {exp_institutions}
+
+Generate a {tone} LinkedIn connection request (<300 chars).
+
+Front-end flattens arrays into comma-separated strings before substitution.
+
+⸻
+
+7 · State Management (Zustand)
+
+```javascript
+export const useChatStore = create((set, get) => ({
+  // State
+  userProfile: null,
+  contacts: [],
+  currentContactId: null,
+  messages: {}, // { contactId: [{ role: 'ai'|'user', content: string, createdAt: Date }] }
+  loading: { scrape: false, ai: false },
+  customPrompts: [], // User's custom prompts
+
+  // Actions
+  setUserProfile: (profile) => set({ userProfile: profile }),
+  
+  addContact: (contact) => {
+    const { contacts } = get();
+    // Limit to 10 contacts
+    if (contacts.length >= 10) {
+      alert('Maximum 10 contacts allowed. Please remove some contacts first.');
+      return;
+    }
+    set((state) => ({ 
+      contacts: [...state.contacts, contact],
+      currentContactId: contact.linkedin_id 
+    }));
+  },
+  
+  removeContact: (contactId) => set((state) => ({
+    contacts: state.contacts.filter(c => c.linkedin_id !== contactId),
+    messages: Object.fromEntries(
+      Object.entries(state.messages).filter(([id]) => id !== contactId)
+    )
+  })),
+  
+  setCurrentContact: (contactId) => set({ currentContactId: contactId }),
+  
+  pushMessage: (contactId, message) => set((state) => {
+    const list = state.messages[contactId] || [];
+    return {
+      ...state,
+      messages: {
+        ...state.messages,
+        [contactId]: [...list, { ...message, createdAt: new Date() }]
+      }
+    };
+  }),
+  
+  updateMessage: (contactId, messageIndex, content) => set((state) => {
+    const messages = state.messages[contactId] || [];
+    const updatedMessages = [...messages];
+    updatedMessages[messageIndex] = { ...updatedMessages[messageIndex], content };
+    
+    return {
+      ...state,
+      messages: {
+        ...state.messages,
+        [contactId]: updatedMessages
+      }
+    };
+  }),
+  
+  setLoading: (key, value) => set((state) => ({
+    ...state,
+    loading: { ...state.loading, [key]: value }
+  })),
+  
+  addCustomPrompt: (prompt) => set((state) => ({
+    customPrompts: [...state.customPrompts, prompt]
+  })),
+  
+  removeCustomPrompt: (index) => set((state) => ({
+    customPrompts: state.customPrompts.filter((_, i) => i !== index)
+  })),
+  
+  // Reset store
+  reset: () => set({
+    userProfile: null,
+    contacts: [],
+    currentContactId: null,
+    messages: {},
+    loading: { scrape: false, ai: false },
+    customPrompts: []
+  })
+}));
+```
+
+
+⸻
+
+8 · Internal APIs
+
+| Path | Method | Body | Response | Notes |
+|------|--------|------|----------|-------|
+| `/api/auth/[...nextauth]` | GET/POST | - | NextAuth session | GitHub OAuth provider |
+| `/api/user/scrape` | POST | `{ url }` | profile JSON (see § 5) | Requires auth, saves to DB |
+| `/api/contact/scrape` | POST | `{ url }` | profile JSON | Requires auth, saves to DB |
+| `/api/message/generate` | POST | `{ contact, prompt, userProfile }` | `{ message }` | Calls Hugging Face API |
+
+
+⸻
+
+9 · Testing & Deployment
+	•	Unit: Vitest + React Testing Library (components, store).
+	•	Integration: Vitest + live FastAPI container in CI (daily run).
+	•	Deployment
+	•	Front-end: Vercel (free)
+	•	Scraper: Render Docker (free 512 MB) with LI_AT_COOKIE, HF_API_KEY envs
+	•	DB: MongoDB Atlas M0 free tier
+
+⸻
+
+10 · Milestones (7 days)
+
+Day	Deliverable
+D0	Repo scaffold, Tailwind & shadcn, Zustand store, GitHub OAuth
+D1	/dashboard + “Fetch My Profile” flow
+D2	/chat static layout
+D3	+Contact modal → /api/contact/scrape
+D4	HF API integration, Prompt Box & Chips
+D5	Vitest tests; FastAPI Docker deployed to Render
+D6	UI polish, Lighthouse > 90, README & screenshots
+
+
+⸻
+
+Cursor Prompt (copy-paste)
+
+# Cursor Instruction – LinkPilot v1.0
+
+Goals
+1. Implement GitHub OAuth with NextAuth (JSX, no TypeScript).
+2. Pages:
+   • /dashboard – intro + “Fetch My Profile” (store profile in Zustand + DB)
+   • /chat      – LinkedIn-style UI:
+       - Left: contact list + “+Contact” modal (calls /api/contact/scrape)
+       - Right: Post placeholder card + chat bubbles
+       - Bottom: prompt textarea + “Generate”; 4 prompt chips
+3. Global state via Zustand (userProfile, contacts, messages, loading).
+4. `/api/message/generate` calls Hugging Face Inference API (env HF_API_KEY).
+5. Tailwind + shadcn/ui; unit tests with Vitest.
+Rules
+- For each step: explain WHY, show file diffs only, wait for my “Next” before continuing.
+
+**Step 1:** set up NextAuth GitHub provider and create `/dashboard` page with “Fetch My Profile” flow.
+
+Copy this PRD for team reference, then paste the prompt into Cursor to start step-by-step implementation.

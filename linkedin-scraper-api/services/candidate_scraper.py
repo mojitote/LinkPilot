@@ -40,68 +40,73 @@ def scrape_linkedin_profile(linkedin_id):
     max_retries = 3
     for attempt in range(max_retries):
         try:
+            print(f"[INFO] Attempt {attempt + 1} to create WebDriver for LinkedIn ID: {linkedin_id}")
             driver = webdriver.Chrome(service=get_chrome_service(), options=options)
+            print(f"[INFO] WebDriver created successfully for LinkedIn ID: {linkedin_id}")
             break
         except Exception as e:
-            print(f"Attempt {attempt + 1} failed to create WebDriver: {e}")
+            print(f"[ERROR] Attempt {attempt + 1} failed to create WebDriver: {e}")
             if attempt == max_retries - 1:
+                print(f"[ERROR] Failed to create WebDriver after {max_retries} attempts: {str(e)}")
                 return {"error": f"Failed to create WebDriver after {max_retries} attempts: {str(e)}"}
             import time
             time.sleep(2)  # Wait before retry
     
     try:
         # Load cookies from the file
+        print(f"[INFO] Loading session cookies for LinkedIn ID: {linkedin_id}")
         add_session_cookie(driver)
 
-        print(f'Scraping data for id: {linkedin_id}')
+        print(f"[INFO] Scraping data for LinkedIn profile: {linkedin_id}")
 
         # LinkedIn URL for the profile
         profile_url = f"https://www.linkedin.com/in/{linkedin_id}/"
 
         # Navigate to the LinkedIn profile
         driver.get(profile_url)
+        print(f"[INFO] Navigated to profile URL: {profile_url}")
 
         if "/404" in driver.current_url or "Page not found" in driver.page_source:
-            print(f"Profile for {linkedin_id} not found (404)")
+            print(f"[ERROR] Profile for {linkedin_id} not found (404)")
             return {"error": f"Profile for {linkedin_id} not found."}
 
         sleep(2)
 
-        # --- 优化滚动和Show more点击 ---
+        # --- Optimize scrolling and Show more clicking ---
+        print(f"[INFO] Scrolling to bottom and clicking all 'Show more' buttons for {linkedin_id}")
         scroll_to_bottom(driver, pause_time=1.5, max_attempts=8)
         click_all_show_more(driver)
         sleep(1)
         # ---
 
-        # 打印页面源码，方便调试 XPath
-        import os
-        # 获取当前文件所在目录（services），然后找到test/htmls目录
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        test_htmls_dir = os.path.join(current_dir, "..", "test", "htmls")
-        test_htmls_dir = os.path.abspath(test_htmls_dir)
-        os.makedirs(test_htmls_dir, exist_ok=True)
-        
-        html_file_path = os.path.join(test_htmls_dir, f"{linkedin_id}.html")
-        with open(html_file_path, "w", encoding="utf-8") as f:
-            f.write(driver.page_source)
-        print(f"[调试] 已保存页面源码到 {html_file_path}")
+        # # Save page source for debugging
+        # import os
+        # current_dir = os.path.dirname(os.path.abspath(__file__))
+        # test_htmls_dir = os.path.join(current_dir, "..", "test", "htmls")
+        # test_htmls_dir = os.path.abspath(test_htmls_dir)
+        # os.makedirs(test_htmls_dir, exist_ok=True)
+        # html_file_path = os.path.join(test_htmls_dir, f"{linkedin_id}.html")
+        # with open(html_file_path, "w", encoding="utf-8") as f:
+        #     f.write(driver.page_source)
+        # print(f"[INFO] Saved page source to {html_file_path}")
 
         # Scrape name, experiences, education from the LinkedIn profile
         try:
+            print(f"[INFO] Extracting profile details for {linkedin_id}")
             name = search_for_candidate_name(driver)
             if not name:
-                print("无法找到名字，可能是 XPath 失效或页面结构变动")
-                return {"error": "无法找到名字，可能是 XPath 失效或页面结构变动"}
+                print(f"[ERROR] Could not find name for {linkedin_id}, possibly due to XPath failure or page structure change")
+                return {"error": "Could not find name, possibly due to XPath failure or page structure change"}
             avatar = search_for_candidate_avatar(driver)
             headline = search_for_candidate_headline(driver)
             education = search_for_section(driver, "Education")
             experience = search_for_section(driver, "Experience")
             about = search_for_section(driver, "About")
         except Exception as e:
-            print(f"Error scraping details for {linkedin_id} : {e}")
+            print(f"[ERROR] Exception while scraping details for {linkedin_id}: {e}")
             return {"error": f"Error searching for details for {linkedin_id}"}
 
-        print(f"finished feching details for profile {linkedin_id} successfully")
+        print(f"[INFO] Successfully fetched details for profile {linkedin_id}")
         return {
             "linkedin_id": linkedin_id,
             "name": name,
@@ -112,7 +117,8 @@ def scrape_linkedin_profile(linkedin_id):
             "experience": experience,
         }
     except Exception as e:
-        print(f"Error feching details for {linkedin_id} : {e}")
-        return {"error": f"Error feching profile details for {linkedin_id}"}
+        print(f"[ERROR] Exception while fetching details for {linkedin_id}: {e}")
+        return {"error": f"Error fetching profile details for {linkedin_id}"}
     finally:
+        print(f"[INFO] Quitting WebDriver for LinkedIn ID: {linkedin_id}")
         driver.quit()

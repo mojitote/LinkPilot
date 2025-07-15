@@ -170,5 +170,5 @@ linkedin-scraper-api/logs/
 linkedin-scraper-api/.env
 linkedin-scraper-api/.env.local
 
-#temp
-.temp-linkedin-scraper/
+#test
+test/

@@ -8,11 +8,16 @@ export const useChatStore = create((set, get) => ({
   messages: {}, // { contactId: [{ role: 'ai'|'user', content: string, createdAt: Date }] }
   loading: { scrape: false, ai: false },
   customPrompts: [], // User's custom prompts
+  inputDrafts: {},
 
   // Actions
   setUserProfile: (profile) => set({ userProfile: profile }),
   
-  setContacts: (contacts) => set({ contacts }),
+  setContacts: (contacts) => {
+    // Ensure contacts is always an array
+    const contactsArray = Array.isArray(contacts) ? contacts : [];
+    set({ contacts: contactsArray });
+  },
   
   updateContact: (contactId, updatedContact) => set((state) => ({
     contacts: state.contacts.map(c => 
@@ -98,6 +103,10 @@ export const useChatStore = create((set, get) => ({
   removeCustomPrompt: (index) => set((state) => ({
     customPrompts: state.customPrompts.filter((_, i) => i !== index)
   })),
+
+  setInputDraft: (contactId, value) => set((state) => ({
+    inputDrafts: { ...state.inputDrafts, [contactId]: value }
+  })),
   
   // Reset store
   reset: () => set({
@@ -106,6 +115,7 @@ export const useChatStore = create((set, get) => ({
     currentContactId: null,
     messages: {},
     loading: { scrape: false, ai: false },
-    customPrompts: []
+    customPrompts: [],
+    inputDrafts: {}
   })
 })); 

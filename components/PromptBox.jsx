@@ -17,19 +17,20 @@ export default function PromptBox({ disabled }) {
   const [loading, setLoading] = useState(false);
   const [originalText, setOriginalText] = useState('');
   const [generatedText, setGeneratedText] = useState('');
-  const [showRevertButton, setShowRevertButton] = useState(false);
+  // Remove handleRevert and showRevertButton logic
   
   const currentContactId = useChatStore(s => s.currentContactId);
   const contacts = useChatStore(s => s.contacts);
   const userProfile = useChatStore(s => s.userProfile);
   const addMessage = useChatStore(s => s.addMessage);
+  const inputDrafts = useChatStore(s => s.inputDrafts);
 
   // Listen for AI suggestion updates
   useEffect(() => {
     const handleUpdateAISuggestion = (event) => {
       const { message } = event.detail;
       setGeneratedText(message);
-      setShowRevertButton(true);
+      // setShowRevertButton(true); // This line is removed
     };
 
     window.addEventListener('updateAISuggestion', handleUpdateAISuggestion);
@@ -43,20 +44,15 @@ export default function PromptBox({ disabled }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!prompt.trim()) return;
-    
+    // Remove the check for message history, always allow generation
     const currentContact = contacts.find(c => c.linkedin_id === currentContactId);
     if (!currentContact || !userProfile) {
       console.error('Missing contact or user profile');
       return;
     }
-    
     setLoading(true);
     try {
-      // Store original text before generation
-      setOriginalText(prompt);
-      
-      // Generate new message with custom prompt
+      setOriginalText(inputDrafts[currentContactId] || '');
       const response = await fetch('/api/message/generate', {
         method: 'POST',
         headers: { 
@@ -69,6 +65,7 @@ export default function PromptBox({ disabled }) {
             contactHeadline: currentContact.headline,
             contactCompany: currentContact.company,
             contactAbout: currentContact.about,
+            userName: userProfile.name,
             userHeadline: userProfile.headline,
             userAbout: userProfile.about,
             sharedBackground: currentContact.shared || '',
@@ -77,14 +74,11 @@ export default function PromptBox({ disabled }) {
           }
         }),
       });
-      
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
           setGeneratedText(data.data.message);
-          setShowRevertButton(true);
-          
-          // Update the message input area with generated text
+          // setShowRevertButton(true); // This line is removed
           window.dispatchEvent(new CustomEvent('updateMessageInput', { 
             detail: { message: data.data.message } 
           }));
@@ -103,14 +97,14 @@ export default function PromptBox({ disabled }) {
     }
   };
 
-  const handleRevert = () => {
-    setGeneratedText('');
-    setShowRevertButton(false);
-    
-    // Revert to original text in message input
+  // Remove handleRevert and showRevertButton logic
+
+  const handleDiscard = () => {
+    // Restore to pre-generate text in message input
     window.dispatchEvent(new CustomEvent('updateMessageInput', { 
       detail: { message: originalText } 
     }));
+    setGeneratedText('');
   };
 
   return (
@@ -129,25 +123,12 @@ export default function PromptBox({ disabled }) {
           <button
             type="submit"
             className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
-            disabled={disabled || loading || !prompt.trim()}
+            disabled={disabled || loading}
           >
             {loading ? 'Generating...' : 'Generate'}
           </button>
         </div>
-        
-        {/* Revert Button */}
-        {showRevertButton && (
-          <div className="flex justify-end">
-            <button
-              type="button"
-              onClick={handleRevert}
-              className="text-sm text-gray-600 hover:text-gray-800 underline"
-            >
-              Revert to original text
-            </button>
-          </div>
-        )}
-        
+        {/* Remove Revert Button UI */}
         <div className="flex space-x-2 mt-1">
           {staticPrompts.map((chip, idx) => (
             <button

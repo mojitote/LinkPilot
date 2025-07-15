@@ -17,7 +17,7 @@ import { useEffect, useState } from 'react';
 export default function ChatPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const { contacts, currentContactId, messages, setCurrentContact, setUserProfile, userProfile, pushMessage, setMessages } = useChatStore();
+  const { contacts, currentContactId, messages, setCurrentContact, setUserProfile, userProfile, pushMessage, setMessages, setContacts } = useChatStore();
   
   // State for contact reply modal
   const [isAddReplyModalOpen, setIsAddReplyModalOpen] = useState(false);
@@ -84,9 +84,9 @@ export default function ChatPage() {
     }
   }, [session, setUserProfile, userProfile]);
 
-  // Load contacts when session is available
+  // Load contacts when user is authenticated
   useEffect(() => {
-    console.log('🔍 Chat page useEffect - Session:', session, 'Contacts count:', contacts.length);
+    console.log('🔍 Chat page - Loading contacts. Session:', session, 'Contacts count:', contacts.length);
     if (session?.user && contacts.length === 0) {
       console.log('📥 Loading contacts from API...');
       fetch('/api/contact', {
@@ -96,12 +96,11 @@ export default function ChatPage() {
         .then(data => {
           console.log('📄 Contacts API response:', data);
           if (data && data.success && data.data && data.data.contacts) {
-            console.log('✅ Setting contacts from API response:', data.data.contacts.length);
-            // Update store with contacts from database
-            const { setContacts } = useChatStore.getState();
+            console.log('✅ Setting contacts from API response:', data.data.contacts.length, 'contacts');
             setContacts(data.data.contacts);
           } else {
-            console.log('📝 No contacts found in database or API error');
+            console.log('❌ No contacts found or unexpected API response format');
+            setContacts([]); // Ensure contacts is always an array
           }
         })
         .catch(err => {
@@ -110,70 +109,35 @@ export default function ChatPage() {
     }
   }, [session, contacts.length]);
 
-  // Auto-load message history when currentContactId changes
+  // Load messages for current contact
   useEffect(() => {
-    if (!currentContactId) return;
-    // Find the current contact
-    const currentContact = contacts.find(c => c.linkedin_id === currentContactId);
-    if (!currentContact) return;
-    // Fetch message history from backend
-    fetch(`/api/message?contactId=${encodeURIComponent(currentContactId)}`, {
-      credentials: 'include',
-    })
-      .then(res => res.json())
-      .then(async data => {
-        if (data && data.success && data.data && data.data.messages) {
-          // Map backend messages to frontend format if needed
-          const mapped = data.data.messages.map(msg => ({
-            ...msg,
-            createdAt: msg.createdAt ? new Date(msg.createdAt) : new Date(),
-          }));
-          setMessages(currentContactId, mapped);
-          // If there are no messages, auto-generate a cold message
-          if (mapped.length === 0 && currentContact) {
-            try {
-              // Call the generate API for a cold message, limit to 200 characters
-              const response = await fetch('/api/message/generate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  contactId: currentContact.linkedin_id,
-                  context: {
-                    contactName: currentContact.name,
-                    contactHeadline: currentContact.headline,
-                    contactCompany: currentContact.company,
-                    contactAbout: currentContact.about,
-                    userHeadline: userProfile?.headline,
-                    userAbout: userProfile?.about,
-                    sharedBackground: currentContact.shared || '',
-                    requestType: 'connection',
-                    tone: 'professional',
-                    maxLength: 200 // Custom field for backend enforcement
-                  }
-                })
-              });
-              if (response.ok) {
-                const result = await response.json();
-                if (result.success && result.data && result.data.message) {
-                  // Truncate to 200 characters if needed
-                  let coldMsg = result.data.message;
-                  if (coldMsg.length > 200) {
-                    coldMsg = coldMsg.slice(0, 200);
-                  }
-                  // Dispatch event to fill message input area
-                  window.dispatchEvent(new CustomEvent('updateMessageInput', { detail: { message: coldMsg } }));
-                }
-              }
-            } catch (err) {
-              console.error('Failed to auto-generate cold message:', err);
-            }
-          }
-        }
+    if (session?.user && currentContactId) {
+      console.log('📥 Loading messages for contact:', currentContactId);
+      fetch(`/api/message?contactId=${currentContactId}`, {
+        credentials: 'include', // Include cookies for authentication
       })
-      .catch(err => {
-        console.error('Failed to load message history:', err);
-      });
-  }, [currentContactId, contacts, setMessages, userProfile]);
+        .then(res => res.json())
+        .then(data => {
+          console.log('📄 Messages API response:', data);
+          if (data && data.success && data.data && data.data.messages) {
+            console.log('✅ Setting messages from API response:', data.data.messages.length, 'messages');
+            // Convert string createdAt to Date objects
+            const messagesWithDates = data.data.messages.map(msg => ({
+              ...msg,
+              createdAt: typeof msg.createdAt === 'string' ? new Date(msg.createdAt) : msg.createdAt
+            }));
+            setMessages(currentContactId, messagesWithDates);
+          } else {
+            console.log('❌ No messages found or unexpected API response format');
+            setMessages(currentContactId, []); // Ensure messages is always an array
+          }
+        })
+        .catch(err => {
+          console.log('❌ Error loading messages:', err);
+          setMessages(currentContactId, []); // Set empty array on error
+        });
+    }
+  }, [session, currentContactId, setMessages]);
 
   // 当前联系人消息
   const currentMessages = messages[currentContactId] || [];
@@ -244,6 +208,23 @@ export default function ChatPage() {
         console.error('Error saving user message to database:', error);
       }
     }
+  };
+
+  // Handle editing message
+  const handleEditMessage = (idx, newContent) => {
+    //copy current messages
+   const updatedMessages = [...currentMessages];
+   updatedMessages[idx] = {
+    ...updatedMessages[idx],
+    content: newContent,
+  };
+  setMessages(currentContactId, updatedMessages);
+  };
+
+  // Handle deleting message
+  const handleDeleteMessage = (idx) => {
+    const updatedMessages = currentMessages.filter((_, i) => i !== msgIdx);
+    setMessages(currentContactId, updatedMessages);
   };
 
   // Handle profile scraping success
@@ -320,7 +301,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-64px)] bg-white rounded-lg shadow-lg overflow-hidden mt-8">
+    <div className="flex h-[calc(100vh-64px)] bg-white rounded-lg shadow-lg overflow-hidden">
       {/* Sidebar: Contacts */}
       <aside className="w-80 bg-blue-50 border-r border-gray-200 flex flex-col">
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
@@ -352,10 +333,22 @@ export default function ChatPage() {
 
       {/* Main Chat Area */}
       <section className="flex-1 flex flex-col">
-        {/* Top: Post Generator Card */}
-        <div className="p-4 border-b border-gray-200">
-          <PostGeneratorCard />
-        </div>
+        {/* Top: Contact Info Bar */}
+        {currentContact && (
+          <div className="flex items-center justify-end gap-4 px-6 py-4 bg-blue-50 border-b border-blue-200 min-h-[72px]">
+            <div className="flex flex-col items-end justify-center">
+              <span className="text-lg font-bold text-blue-900">{currentContact.name}</span>
+              {currentContact.headline && (
+                <span className="text-sm text-blue-700 mt-1">{currentContact.headline}</span>
+              )}
+            </div>
+            <img
+              src={currentContact.avatarUrl || '/default-avatar.png'}
+              alt={currentContact.name || 'Contact Avatar'}
+              className="w-14 h-14 rounded-full object-cover border-2 border-green-400 shadow-sm"
+            />
+          </div>
+        )}
         {/* Message Pane */}
         <div className="flex-1 overflow-y-auto px-6 py-4 bg-gray-50">
           {currentContact ? (
@@ -363,17 +356,28 @@ export default function ChatPage() {
               {currentMessages.length === 0 ? (
                 <div className="text-gray-400 text-center mt-12">No messages yet. Start the conversation!</div>
               ) : (
-                currentMessages.map((msg, idx) => (
-                  <MessageBubble 
-                    key={`${currentContactId}-${idx}-${msg.createdAt?.getTime() || idx}`} 
-                    message={msg} 
-                    isUser={msg.role === 'user'} 
-                  />
-                ))
+                currentMessages.map((msg, idx) => {
+                  const prevMsg = currentMessages[idx - 1];
+                  const showAvatar = !prevMsg || prevMsg.role !== msg.role;
+                  return (
+                    <MessageBubble 
+                      key={`${currentContactId}-${idx}-${msg.createdAt?.getTime() || idx}`} 
+                      message={msg} 
+                      isUser={msg.role === 'user'} 
+                      avatarUrl={userProfile?.avatarUrl || session?.user?.image}
+                      contactAvatarUrl={currentContact?.avatarUrl}
+                      showAvatar={showAvatar}
+                      onEdit={(newContent) => handleEditMessage(idx, newContent)}
+                      onDelete={() => handleDeleteMessage(idx)}
+                    />
+                  );
+                })
               )}
             </div>
           ) : (
-            <div className="text-gray-400 text-center mt-24">Select a contact to start chatting.</div>
+            <div className="text-gray-400 text-center mt-24 text-2xl font-bold tracking-wide">
+              Select a contact to start chatting.
+            </div>
           )}
         </div>
         {/* Bottom: Message Input Area and Prompt Box */}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useChatStore } from '../store/chatStore';
 
 export default function MessageInputArea({ 
   currentContactId, 
@@ -6,42 +7,48 @@ export default function MessageInputArea({
   onAddContactReply, 
   onSendMessage 
 }) {
-  const [messageText, setMessageText] = useState('');
-  const [isGenerated, setIsGenerated] = useState(false); // Track if the message is AI generated
-  const [preGeneratedText, setPreGeneratedText] = useState(''); // Store the text before AI generation
+  const { inputDrafts, setInputDraft } = useChatStore();
+  const input = inputDrafts[currentContactId] || '';
 
   // Listen for message input updates from PromptBox or auto-generation
   useEffect(() => {
     const handleUpdateMessageInput = (event) => {
       const { message } = event.detail;
-      setPreGeneratedText(messageText); // Save current text before AI fills in
-      setMessageText(message);
-      setIsGenerated(true); // Mark as generated when AI fills in
+      setInputDraft(currentContactId, message); // Save current text before AI fills in
     };
 
     window.addEventListener('updateMessageInput', handleUpdateMessageInput);
     return () => window.removeEventListener('updateMessageInput', handleUpdateMessageInput);
-  }, [messageText]);
+  }, [currentContactId, inputDrafts]); // Add inputDrafts to dependency array
+
+  const handleChange = (e) => {
+    setInputDraft(currentContactId, e.target.value);
+  };
+
+  const handleSend = () => {
+    if (input.trim()) {
+      onSendMessage(input);
+      setInputDraft(currentContactId, '');
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!messageText.trim() || !currentContactId) return;
-    onSendMessage(messageText.trim());
-    setMessageText('');
-    setIsGenerated(false); // Reset after sending
+    if (!input.trim() || !currentContactId) return;
+    onSendMessage(input.trim());
+    setInputDraft(currentContactId, '');
   };
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit(e);
+      handleSend();
     }
   };
 
   // Discard generated message
   const handleDiscard = () => {
-    setMessageText(preGeneratedText); // Restore to pre-generate text
-    setIsGenerated(false);
+    setInputDraft(currentContactId, ''); // Restore to pre-generate text
   };
 
   if (!currentContact) {
@@ -74,11 +81,8 @@ export default function MessageInputArea({
       <form onSubmit={handleSubmit} className="flex space-x-3">
         <div className="flex-1">
           <textarea
-            value={messageText}
-            onChange={(e) => {
-              setMessageText(e.target.value);
-              setIsGenerated(false); // If user edits, treat as not generated
-            }}
+            value={input}
+            onChange={handleChange}
             onKeyPress={handleKeyPress}
             placeholder={`Type your message to ${currentContact.name}...`}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y min-h-[48px] max-h-60"
@@ -88,13 +92,13 @@ export default function MessageInputArea({
         </div>
         <button
           type="submit"
-          disabled={!messageText.trim() || !currentContactId}
+          disabled={!input.trim() || !currentContactId}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
         >
           Send
         </button>
         {/* Discard button only visible if message is generated */}
-        {isGenerated && (
+        {input && ( // Check if input is not empty
           <button
             type="button"
             onClick={handleDiscard}

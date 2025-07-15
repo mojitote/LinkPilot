@@ -16,10 +16,32 @@ export default function SettingsPage() {
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/');
-    } else if (status === 'authenticated' && userProfile) {
+    } else if (status === 'authenticated') {
+      if (!userProfile) {
+        // Fetch user profile if not present
+        fetchUserProfile();
+      } else {
+        setLoading(false);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, userProfile, router]);
+
+  // Fetch user profile from API
+  const fetchUserProfile = async () => {
+    try {
+      const response = await fetch('/api/user/profile');
+      if (response.ok) {
+        const profile = await response.json();
+        setUserProfile(profile);
+        setLoading(false);
+      } else {
+        setLoading(false);
+      }
+    } catch (err) {
       setLoading(false);
     }
-  }, [status, userProfile, router]);
+  };
 
   const handleProfileSave = async (profileData) => {
     try {

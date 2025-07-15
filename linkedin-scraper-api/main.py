@@ -125,7 +125,7 @@ async def scrape_linkedin_endpoint(request: ScrapeRequest):
         print(f"[INFO] Extracted LinkedIn ID: {linkedin_id}")
         
         if request.type == "profile":
-            profile_data = scrape_linkedin_profile(linkedin_id)
+            profile_data = await scrape_linkedin_profile(linkedin_id)
             print(f"[INFO] Scraped profile data: {profile_data}")
             
             if "error" in profile_data:

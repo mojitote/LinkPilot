@@ -119,14 +119,17 @@ async def health_check():
 @app.post("/scrape", response_model=Union[ProfileResponse, CompanyResponse])
 async def scrape_linkedin_endpoint(request: ScrapeRequest):
     # Log incoming request
-    print(f"Processing scrape request: {request.type} for {request.url}")
+    print(f"[INFO] Received scrape request: type={request.type}, url={request.url}")
     try:
         linkedin_id = extract_linkedin_id(str(request.url))
+        print(f"[INFO] Extracted LinkedIn ID: {linkedin_id}")
         
         if request.type == "profile":
             profile_data = scrape_linkedin_profile(linkedin_id)
+            print(f"[INFO] Scraped profile data: {profile_data}")
             
             if "error" in profile_data:
+                print(f"[ERROR] Profile scraping failed: {profile_data['error']}")
                 raise HTTPException(
                     status_code=422,
                     detail=f"Profile scraping failed: {profile_data['error']}"
@@ -144,6 +147,7 @@ async def scrape_linkedin_endpoint(request: ScrapeRequest):
                 if positions:
                     about_text = positions[0]  # About text is stored in the first position
             
+            print(f"[INFO] Returning ProfileResponse for {linkedin_id}")
             return ProfileResponse(
                 linkedin_id=profile_data.get("linkedin_id", linkedin_id),
                 name=profile_data.get("name", ""),
@@ -157,13 +161,16 @@ async def scrape_linkedin_endpoint(request: ScrapeRequest):
         
         elif request.type == "company":
             company_data = scrape_linkedin_company(linkedin_id)
+            print(f"[INFO] Scraped company data: {company_data}")
             
             if "error" in company_data:
+                print(f"[ERROR] Company scraping failed: {company_data['error']}")
                 raise HTTPException(
                     status_code=422,
                     detail=f"Company scraping failed: {company_data['error']}"
                 )
             
+            print(f"[INFO] Returning CompanyResponse for {linkedin_id}")
             return CompanyResponse(
                 linkedin_id=company_data.get("linkedin_id", linkedin_id),
                 name=company_data.get("name", ""),
@@ -175,15 +182,16 @@ async def scrape_linkedin_endpoint(request: ScrapeRequest):
             )
         
     except ValueError as e:
-        print(f"ValueError in scrape endpoint: {e}")
+        print(f"[ERROR] ValueError in scrape endpoint: {e}")
         raise HTTPException(
             status_code=400,
             detail=f"Invalid LinkedIn URL: {str(e)}"
         )
-    except HTTPException:
+    except HTTPException as he:
+        print(f"[ERROR] HTTPException in scrape endpoint: {he.detail}")
         raise
     except Exception as e:
-        print(f"Unexpected error in scrape endpoint: {e}")
+        print(f"[ERROR] Unexpected error in scrape endpoint: {e}")
         import traceback
         traceback.print_exc()
         raise HTTPException(

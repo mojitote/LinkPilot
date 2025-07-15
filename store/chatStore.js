@@ -64,6 +64,14 @@ export const useChatStore = create((set, get) => ({
     };
   }),
   
+  // Set all messages for a contact (used for loading history from backend)
+  setMessages: (contactId, messages) => set((state) => ({
+    messages: {
+      ...state.messages,
+      [contactId]: messages
+    }
+  })),
+  
   updateMessage: (contactId, messageIndex, content) => set((state) => {
     const messages = state.messages[contactId] || [];
     const updatedMessages = [...messages];

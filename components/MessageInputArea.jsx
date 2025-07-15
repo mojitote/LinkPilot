@@ -7,24 +7,28 @@ export default function MessageInputArea({
   onSendMessage 
 }) {
   const [messageText, setMessageText] = useState('');
+  const [isGenerated, setIsGenerated] = useState(false); // Track if the message is AI generated
+  const [preGeneratedText, setPreGeneratedText] = useState(''); // Store the text before AI generation
 
-  // Listen for message input updates from PromptBox
+  // Listen for message input updates from PromptBox or auto-generation
   useEffect(() => {
     const handleUpdateMessageInput = (event) => {
       const { message } = event.detail;
+      setPreGeneratedText(messageText); // Save current text before AI fills in
       setMessageText(message);
+      setIsGenerated(true); // Mark as generated when AI fills in
     };
 
     window.addEventListener('updateMessageInput', handleUpdateMessageInput);
     return () => window.removeEventListener('updateMessageInput', handleUpdateMessageInput);
-  }, []);
+  }, [messageText]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!messageText.trim() || !currentContactId) return;
-    
     onSendMessage(messageText.trim());
     setMessageText('');
+    setIsGenerated(false); // Reset after sending
   };
 
   const handleKeyPress = (e) => {
@@ -32,6 +36,12 @@ export default function MessageInputArea({
       e.preventDefault();
       handleSubmit(e);
     }
+  };
+
+  // Discard generated message
+  const handleDiscard = () => {
+    setMessageText(preGeneratedText); // Restore to pre-generate text
+    setIsGenerated(false);
   };
 
   if (!currentContact) {
@@ -65,10 +75,13 @@ export default function MessageInputArea({
         <div className="flex-1">
           <textarea
             value={messageText}
-            onChange={(e) => setMessageText(e.target.value)}
+            onChange={(e) => {
+              setMessageText(e.target.value);
+              setIsGenerated(false); // If user edits, treat as not generated
+            }}
             onKeyPress={handleKeyPress}
             placeholder={`Type your message to ${currentContact.name}...`}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y min-h-[48px] max-h-60"
             rows={2}
             disabled={!currentContactId}
           />
@@ -80,6 +93,17 @@ export default function MessageInputArea({
         >
           Send
         </button>
+        {/* Discard button only visible if message is generated */}
+        {isGenerated && (
+          <button
+            type="button"
+            onClick={handleDiscard}
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium ml-2"
+            title="Discard generated message"
+          >
+            Discard
+          </button>
+        )}
       </form>
       
       <div className="mt-2 text-xs text-gray-500">

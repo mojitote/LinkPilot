@@ -4,6 +4,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 import sys
+import os
 
 from config import settings
 
@@ -11,15 +12,21 @@ from config import settings
 options = Options()
 if settings.HEADLESS:
     options.add_argument("--headless=new")
+options.add_argument('--no-sandbox')
+options.add_argument('--disable-dev-shm-usage')
+options.add_argument('--disable-gpu')
+options.add_argument('--window-size=1920,1080')
 options.add_argument('--ignore-ssl-errors=yes')
 options.add_argument('--ignore-certificate-errors=yes')
 options.add_argument("--log-level=3")
-# 自动适配 Chrome 路径
-if sys.platform == "darwin":
-    # MacOS
+
+# Auto-detect Chrome binary location for Mac/Linux, allow override by env
+chrome_path = os.environ.get("CHROME_BINARY", None)
+if chrome_path:
+    options.binary_location = chrome_path
+elif sys.platform == "darwin":
     options.binary_location = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 elif sys.platform.startswith("linux"):
-    # Linux (Docker/云服务器)
     options.binary_location = "/usr/bin/google-chrome"
 
 # Setting up service with proper Chrome path for macOS

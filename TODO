@@ -30,13 +30,13 @@ Todo:
   4. 保持 Python 项目结构清晰，可通过 curl 本地测试
 
   Day2：
-  ☐ 搞定爬虫 并测试 单独提出来 先看懂原来的代码 
-  ☐ 把代码放到chatgpt里 再次尝试爬虫 要符合结构 并输出代码
+  搞定爬虫 并测试 单独提出来 先看懂原来的代码 
+  把代码放到chatgpt里 再次尝试爬虫 要符合结构 并输出代码
   ☐ 改进输出结构为符合linkedin的结构
-  ☐ 2.补充db.js
-  ☐ 3.补充openai.js
+  2.补充db.js
+  3.补充openai.js
   4.为什么分这么多div
-  5.修复github登录主页不能用
-
-  
-
+  ☐ 5.修复github登录主页不能用
+☐功能1 google登录 
+☐ 功能2 在没有message的时候自动生成一个code message要在两百个字母之内 因为linkedin的message不能超过两百个字母
+功能3 在message选择return的时候不是显示空 而是返回在点击generate之前框内的文本

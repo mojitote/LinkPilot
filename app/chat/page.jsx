@@ -17,7 +17,7 @@ import { useEffect, useState } from 'react';
 export default function ChatPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const { contacts, currentContactId, messages, setCurrentContact, setUserProfile, userProfile, pushMessage } = useChatStore();
+  const { contacts, currentContactId, messages, setCurrentContact, setUserProfile, userProfile, pushMessage, setMessages } = useChatStore();
   
   // State for contact reply modal
   const [isAddReplyModalOpen, setIsAddReplyModalOpen] = useState(false);
@@ -109,6 +109,71 @@ export default function ChatPage() {
         });
     }
   }, [session, contacts.length]);
+
+  // Auto-load message history when currentContactId changes
+  useEffect(() => {
+    if (!currentContactId) return;
+    // Find the current contact
+    const currentContact = contacts.find(c => c.linkedin_id === currentContactId);
+    if (!currentContact) return;
+    // Fetch message history from backend
+    fetch(`/api/message?contactId=${encodeURIComponent(currentContactId)}`, {
+      credentials: 'include',
+    })
+      .then(res => res.json())
+      .then(async data => {
+        if (data && data.success && data.data && data.data.messages) {
+          // Map backend messages to frontend format if needed
+          const mapped = data.data.messages.map(msg => ({
+            ...msg,
+            createdAt: msg.createdAt ? new Date(msg.createdAt) : new Date(),
+          }));
+          setMessages(currentContactId, mapped);
+          // If there are no messages, auto-generate a cold message
+          if (mapped.length === 0 && currentContact) {
+            try {
+              // Call the generate API for a cold message, limit to 200 characters
+              const response = await fetch('/api/message/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  contactId: currentContact.linkedin_id,
+                  context: {
+                    contactName: currentContact.name,
+                    contactHeadline: currentContact.headline,
+                    contactCompany: currentContact.company,
+                    contactAbout: currentContact.about,
+                    userHeadline: userProfile?.headline,
+                    userAbout: userProfile?.about,
+                    sharedBackground: currentContact.shared || '',
+                    requestType: 'connection',
+                    tone: 'professional',
+                    maxLength: 200 // Custom field for backend enforcement
+                  }
+                })
+              });
+              if (response.ok) {
+                const result = await response.json();
+                if (result.success && result.data && result.data.message) {
+                  // Truncate to 200 characters if needed
+                  let coldMsg = result.data.message;
+                  if (coldMsg.length > 200) {
+                    coldMsg = coldMsg.slice(0, 200);
+                  }
+                  // Dispatch event to fill message input area
+                  window.dispatchEvent(new CustomEvent('updateMessageInput', { detail: { message: coldMsg } }));
+                }
+              }
+            } catch (err) {
+              console.error('Failed to auto-generate cold message:', err);
+            }
+          }
+        }
+      })
+      .catch(err => {
+        console.error('Failed to load message history:', err);
+      });
+  }, [currentContactId, contacts, setMessages, userProfile]);
 
   // 当前联系人消息
   const currentMessages = messages[currentContactId] || [];

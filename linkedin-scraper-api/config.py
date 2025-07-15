@@ -30,10 +30,11 @@ class Settings:
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "info")
     
     # CORS Configuration
+    FRONTEND_URL: str = os.getenv('FRONTEND_URL', 'http://localhost:3000')
     CORS_ORIGINS: List[str] = [
+        FRONTEND_URL,
         "http://localhost:3000",
-        "http://localhost:3001", 
-        "https://yourdomain.com"  # Add your production domain
+        "http://localhost:3001"
     ]
     
     # Rate Limiting
@@ -57,11 +58,12 @@ class Settings:
     
     @classmethod
     def get_cors_origins(cls) -> List[str]:
-        """Get CORS origins from environment or default"""
+        """Get CORS origins from environment or default (always includes FRONTEND_URL)"""
         env_origins = os.getenv("CORS_ORIGINS")
         if env_origins:
-            return env_origins.split(",")
-        return cls.CORS_ORIGINS
+            return [o.strip() for o in env_origins.split(",") if o.strip()]
+        # Always include FRONTEND_URL
+        return list(set([cls.FRONTEND_URL] + cls.CORS_ORIGINS))
     
     @classmethod
     def validate_required_settings(cls):

@@ -1,0 +1,27 @@
+{
+  "contactId": "joangao-cn",
+  "userId": "113025080297359589521",
+  "timestamp": "2025-07-15T10-52-31-768Z",
+  "context": {
+    "contactName": "Joan Gao",
+    "contactHeadline": "Software Engineer @Autonoma | AI × SEO × Growth Marketing",
+    "contactAbout": "2+ years in software development, skilled in frontend (HTML, JavaScript, React, Next.js), backend (C#, Node.js, Flask, MySQL), and cloud technologies (Docker, AWS, Firebase, Heroku). Experienced with project tools like Git, Jira, Figma, and PowerBI, and have a foundation in machine learning using PyTorch and Google Colab.\n\nAs a junior software engineer, I leverage skills to drive impactful projects and support strategic decisions. Collaborating with cross-functional teams, I prioritize understanding client needs and elevate product design, full-stack development, performance optimization and reporting in industries such as laboratory and mining.\n\nBeyond my work and studies, I’ve led teams in several hackathons. These experiences honed my rapid learning, pressure management, and leadership skills, enabling me to deliver innovative, high-quality solutions and excel in project planning and presentations:)",
+    "sharedBackground": "",
+    "requestType": "connection",
+    "tone": "professional"
+  },
+  "systemPrompt": "\n    You are a professional LinkedIn networking assistant. \n    Your task is to craft a professional and personalized LinkedIn message written from **my** (the user's) perspective. \n    \n    Always assume that I am initiating the message. Use any provided profile context to make it relevant and engaging. \n    Keep the tone human, authentic, and focused on connection — not sales or generic templates.\n    \n    🧠 Guidelines:\n    - Write in first person (as me).\n    - Message should sound like a real person, not an AI.\n    - If no prior interaction exists, assume it’s a cold outreach.\n    - Keep the message short (ideally under 300 characters) and polite.\n    \n    Use the following context to personalize the message if available.\n    ",
+  "userPrompt": "Target Person:\n- Name: Joan Gao\n- Headline: Software Engineer @Autonoma | AI × SEO × Growth Marketing\n- About: 2+ years in software development, skilled in frontend (HTML, JavaScript, React, Next.js), backend (C#, Node.js, Flask, MySQL), and cloud technologies (Docker, AWS, Firebase, Heroku). Experienced with project tools like Git, Jira, Figma, and PowerBI, and have a foundation in machine learning using PyTorch and Google Colab.\n\nAs a junior software engineer, I leverage skills to drive impactful projects and support strategic decisions. Collaborating with cross-functional teams, I prioritize understanding client needs and elevate product design, full-stack development, performance optimization and reporting in industries such as laboratory and mining.\n\nBeyond my work and studies, I’ve led teams in several hackathons. These experiences honed my rapid learning, pressure management, and leadership skills, enabling me to deliver innovative, high-quality solutions and excel in project planning and presentations:)\n\nRequest: I would like to connection.\nTone: professional.",
+  "chatHistory": [],
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an expert LinkedIn networking assistant. Write a cold LinkedIn connection message under 200 characters, written from my (the user's) perspective. Make it concise, friendly, and personalized using any provided context, but assume minimal or no prior interaction. The message should be warm, professional, and encourage a connection."
+    },
+    {
+      "role": "user",
+      "content": "Target person:\n- Name: Joan Gao\n- Headline: Software Engineer @Autonoma | AI × SEO × Growth Marketing\n\nRequest: I would like to send a cold connection request.\nTone: professional."
+    }
+  ],
+  "generated": " Hi Joan,\n\nI came across your profile and was impressed by your work in AI and growth marketing. I'd love to connect and learn from your experiences in the tech industry. Best, [Your Name]"
+}

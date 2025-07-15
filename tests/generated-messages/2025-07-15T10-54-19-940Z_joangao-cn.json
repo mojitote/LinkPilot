@@ -1,0 +1,55 @@
+{
+  "contactId": "joangao-cn",
+  "userId": "113025080297359589521",
+  "timestamp": "2025-07-15T10-54-19-940Z",
+  "context": {
+    "contactName": "Joan Gao",
+    "contactHeadline": "Software Engineer @Autonoma | AI × SEO × Growth Marketing",
+    "contactAbout": "2+ years in software development, skilled in frontend (HTML, JavaScript, React, Next.js), backend (C#, Node.js, Flask, MySQL), and cloud technologies (Docker, AWS, Firebase, Heroku). Experienced with project tools like Git, Jira, Figma, and PowerBI, and have a foundation in machine learning using PyTorch and Google Colab.\n\nAs a junior software engineer, I leverage skills to drive impactful projects and support strategic decisions. Collaborating with cross-functional teams, I prioritize understanding client needs and elevate product design, full-stack development, performance optimization and reporting in industries such as laboratory and mining.\n\nBeyond my work and studies, I’ve led teams in several hackathons. These experiences honed my rapid learning, pressure management, and leadership skills, enabling me to deliver innovative, high-quality solutions and excel in project planning and presentations:)",
+    "sharedBackground": "",
+    "requestType": "connection",
+    "tone": "约个明天下午五点"
+  },
+  "systemPrompt": "\n    You are a professional LinkedIn networking assistant. \n    Your task is to craft a 约个明天下午五点 and personalized LinkedIn message written from **my** (the user's) perspective. \n    \n    Always assume that I am initiating the message. Use any provided profile context to make it relevant and engaging. \n    Keep the tone human, authentic, and focused on connection — not sales or generic templates.\n    \n    🧠 Guidelines:\n    - Write in first person (as me).\n    - Message should sound like a real person, not an AI.\n    - If no prior interaction exists, assume it’s a cold outreach.\n    - Keep the message short (ideally under 300 characters) and polite.\n    \n    Use the following context to personalize the message if available.\n    ",
+  "userPrompt": "Target Person:\n- Name: Joan Gao\n- Headline: Software Engineer @Autonoma | AI × SEO × Growth Marketing\n- About: 2+ years in software development, skilled in frontend (HTML, JavaScript, React, Next.js), backend (C#, Node.js, Flask, MySQL), and cloud technologies (Docker, AWS, Firebase, Heroku). Experienced with project tools like Git, Jira, Figma, and PowerBI, and have a foundation in machine learning using PyTorch and Google Colab.\n\nAs a junior software engineer, I leverage skills to drive impactful projects and support strategic decisions. Collaborating with cross-functional teams, I prioritize understanding client needs and elevate product design, full-stack development, performance optimization and reporting in industries such as laboratory and mining.\n\nBeyond my work and studies, I’ve led teams in several hackathons. These experiences honed my rapid learning, pressure management, and leadership skills, enabling me to deliver innovative, high-quality solutions and excel in project planning and presentations:)\n\nPrevious Conversation (from oldest to most recent):\n- Me: Hi Joan,\n\nI came across your profile and was impressed by your work in AI and growth marketing. I'd love to connect and learn from your experiences in the tech industry. Best, [Your Name]\n- Me: Hi Joan,\n\nI'm really excited about our previous exchange and looking forward to learning more about your experiences in AI and growth marketing. I'd love to grab a coffee sometime to chat about our shared interests and perhaps discuss potential collaborations.\n\nLooking forward to your response,\n[Your Name]\n🔹 Most Recent - Contact: yes of course\n\nPlease ensure your reply naturally responds to the most recent message above.\nRequest: I would like to connection.\nTone: 约个明天下午五点.",
+  "chatHistory": [
+    {
+      "_id": "687632fda777e02f37e2f618",
+      "ownerId": "113025080297359589521",
+      "contactId": "joangao-cn",
+      "content": "Hi Joan,\n\nI came across your profile and was impressed by your work in AI and growth marketing. I'd love to connect and learn from your experiences in the tech industry. Best, [Your Name]",
+      "role": "user",
+      "createdAt": "2025-07-15T10:52:45.259Z",
+      "updatedAt": "2025-07-15T10:52:45.259Z"
+    },
+    {
+      "_id": "68763321a777e02f37e2f619",
+      "ownerId": "113025080297359589521",
+      "contactId": "joangao-cn",
+      "content": "Hi Joan,\n\nI'm really excited about our previous exchange and looking forward to learning more about your experiences in AI and growth marketing. I'd love to grab a coffee sometime to chat about our shared interests and perhaps discuss potential collaborations.\n\nLooking forward to your response,\n[Your Name]",
+      "role": "user",
+      "createdAt": "2025-07-15T10:53:21.446Z",
+      "updatedAt": "2025-07-15T10:53:21.446Z"
+    },
+    {
+      "_id": "68763353a777e02f37e2f61a",
+      "ownerId": "113025080297359589521",
+      "contactId": "joangao-cn",
+      "content": "yes of course",
+      "role": "contact",
+      "createdAt": "2025-07-15T10:54:11.698Z",
+      "updatedAt": "2025-07-15T10:54:11.698Z"
+    }
+  ],
+  "messages": [
+    {
+      "role": "system",
+      "content": "\n    You are a professional LinkedIn networking assistant. \n    Your task is to craft a 约个明天下午五点 and personalized LinkedIn message written from **my** (the user's) perspective. \n    \n    Always assume that I am initiating the message. Use any provided profile context to make it relevant and engaging. \n    Keep the tone human, authentic, and focused on connection — not sales or generic templates.\n    \n    🧠 Guidelines:\n    - Write in first person (as me).\n    - Message should sound like a real person, not an AI.\n    - If no prior interaction exists, assume it’s a cold outreach.\n    - Keep the message short (ideally under 300 characters) and polite.\n    \n    Use the following context to personalize the message if available.\n    "
+    },
+    {
+      "role": "user",
+      "content": "Target Person:\n- Name: Joan Gao\n- Headline: Software Engineer @Autonoma | AI × SEO × Growth Marketing\n- About: 2+ years in software development, skilled in frontend (HTML, JavaScript, React, Next.js), backend (C#, Node.js, Flask, MySQL), and cloud technologies (Docker, AWS, Firebase, Heroku). Experienced with project tools like Git, Jira, Figma, and PowerBI, and have a foundation in machine learning using PyTorch and Google Colab.\n\nAs a junior software engineer, I leverage skills to drive impactful projects and support strategic decisions. Collaborating with cross-functional teams, I prioritize understanding client needs and elevate product design, full-stack development, performance optimization and reporting in industries such as laboratory and mining.\n\nBeyond my work and studies, I’ve led teams in several hackathons. These experiences honed my rapid learning, pressure management, and leadership skills, enabling me to deliver innovative, high-quality solutions and excel in project planning and presentations:)\n\nPrevious Conversation (from oldest to most recent):\n- Me: Hi Joan,\n\nI came across your profile and was impressed by your work in AI and growth marketing. I'd love to connect and learn from your experiences in the tech industry. Best, [Your Name]\n- Me: Hi Joan,\n\nI'm really excited about our previous exchange and looking forward to learning more about your experiences in AI and growth marketing. I'd love to grab a coffee sometime to chat about our shared interests and perhaps discuss potential collaborations.\n\nLooking forward to your response,\n[Your Name]\n🔹 Most Recent - Contact: yes of course\n\nPlease ensure your reply naturally responds to the most recent message above.\nRequest: I would like to connection.\nTone: 约个明天下午五点."
+    }
+  ],
+  "generated": " Hi Joan,\n\nIt's great to hear that you're open to connecting! I'd be thrilled to continue our conversation about AI and growth marketing. How about we grab a coffee this afternoon at 5 PM to discuss our shared interests? I believe our collaboration could be mutually beneficial.\n\nLooking forward to your response,\n[Your Name]"
+}

@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, validator
 from typing import Optional, Dict, Any, List, Union
 import uvicorn
 import re
@@ -30,16 +30,14 @@ app.add_middleware(
 class ScrapeRequest(BaseModel):
     url: str
     type: str = "profile"  # "profile" or "company"
-    
-    @field_validator('url')
-    @classmethod
+
+    @validator('url')
     def validate_linkedin_url(cls, v):
         if not v or 'linkedin.com' not in str(v):
             raise ValueError('URL must be a LinkedIn URL')
         return v
-    
-    @field_validator('type')
-    @classmethod
+
+    @validator('type')
     def validate_type(cls, v):
         if v not in ["profile", "company"]:
             raise ValueError('Type must be either "profile" or "company"')

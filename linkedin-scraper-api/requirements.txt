@@ -1,9 +1,9 @@
 fastapi>=0.110.0
-uvicorn[standard]>=0.29.0
+uvicorn>=0.29.0  # Use pure uvicorn, not [standard], for cloud compatibility (no Rust deps)
 selenium>=4.20.0
 webdriver-manager>=4.0.1
 python-dotenv>=1.0.1
-pydantic>=1.10.0,<2.0.0
+pydantic>=1.10.0,<2.0.0  # Pin to 1.x for cloud compatibility (no Rust deps)
 requests>=2.31.0
 lxml>=5.2.0
 beautifulsoup4>=4.12.3
@@ -16,3 +16,4 @@ starlette>=0.37.2
 pymongo>=4.7.2
 # For logging and debugging
 loguru>=0.7.2 
+# NOTE: Do not add pydantic_core or any Rust-dependent packages for cloud deployment 

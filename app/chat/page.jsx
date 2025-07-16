@@ -222,9 +222,26 @@ export default function ChatPage() {
   };
 
   // Handle deleting message
-  const handleDeleteMessage = (idx) => {
-    const updatedMessages = currentMessages.filter((_, i) => i !== msgIdx);
+  const handleDeleteMessage = async (idx) => {
+    const messageToDelete = currentMessages[idx];
+    
+    // Update UI immediately
+    const updatedMessages = currentMessages.filter((_, i) => i !== idx);
     setMessages(currentContactId, updatedMessages);
+    
+    // Delete from database if user is authenticated and message has an ID
+    if (session?.user && messageToDelete._id) {
+      try {
+        await fetch(`/api/message?messageId=${messageToDelete._id}`, {
+          method: 'DELETE',
+          credentials: 'include',
+        });
+      } catch (error) {
+        console.error('Error deleting message from database:', error);
+        // Optionally revert the UI change if database deletion fails
+        // setMessages(currentContactId, currentMessages);
+      }
+    }
   };
 
   // Handle profile scraping success

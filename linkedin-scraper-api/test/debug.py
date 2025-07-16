@@ -1,12 +1,13 @@
 import sys
 import os
+import asyncio
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from services.candidate_scraper import scrape_linkedin_profile
 import json
 import os
 
-def debug_scrape_profile():
+async def debug_scrape_profile():
     """Debug function to scrape LinkedIn profile with manual ID input"""
     
     # 手动输入LinkedIn ID
@@ -19,8 +20,8 @@ def debug_scrape_profile():
     print(f"\n🔍 开始抓取LinkedIn档案: {linkedin_id}")
     print("=" * 50)
     
-    # 抓取数据
-    result = scrape_linkedin_profile(linkedin_id)
+    # 抓取数据 - 使用 await 调用异步函数
+    result = await scrape_linkedin_profile(linkedin_id)
     
     print("\n📊 抓取结果:")
     print("=" * 50)
@@ -82,4 +83,5 @@ def debug_scrape_profile():
     print("\n" + "=" * 50)
 
 if __name__ == "__main__":
-    debug_scrape_profile()
+    # 使用 asyncio.run() 运行异步函数
+    asyncio.run(debug_scrape_profile())

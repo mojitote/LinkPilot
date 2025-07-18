@@ -1,136 +1,231 @@
-# LinkPilot
+# LinkPilot - AI-Powered LinkedIn Assistant
 
-A modern, enterprise-grade LinkedIn assistant web application.
+[![CI/CD Pipeline](https://github.com/your-username/LinkPilot/workflows/CI%2FCD%20Pipeline/badge.svg)](https://github.com/your-username/LinkPilot/actions/workflows/ci.yml)
+[![Security Scan](https://github.com/your-username/LinkPilot/workflows/Security%20Scan/badge.svg)](https://github.com/your-username/LinkPilot/actions/workflows/security.yml)
+[![Docker Build](https://github.com/your-username/LinkPilot/workflows/Docker%20Build%20and%20Push/badge.svg)](https://github.com/your-username/LinkPilot/actions/workflows/docker.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Tech Stack
-- **Frontend:** Next.js 14, Tailwind CSS, React
-- **Backend:** FastAPI (Python 3.10+)
-- **Database:** MongoDB
-- **AI:** Hugging Face API
-- **UI/UX:** LinkedIn-inspired, modern industrial design
+A modern, AI-powered LinkedIn assistant built with Next.js, FastAPI, and MongoDB. Features automated contact management, intelligent message generation, and professional networking automation.
 
----
+## 🚀 Features
 
-## Features
-- OAuth login (Google, GitHub)
-- LinkedIn-style chat, contact management, and message generation
-- Profile and settings management
-- Industrial-grade UI/UX, responsive and accessible
+- **AI-Powered Messaging**: Generate personalized messages using Hugging Face and OpenAI
+- **Contact Management**: Automated LinkedIn contact scraping and organization
+- **Smart Automation**: Intelligent follow-up scheduling and message optimization
+- **Modern UI/UX**: Professional LinkedIn-inspired design with Tailwind CSS
+- **Real-time Chat**: Interactive chat interface for message generation
+- **Profile Management**: Comprehensive user profile setup and management
 
----
+## 🏗️ Architecture
 
-## 1. Prerequisites
+### Frontend (Next.js 14)
+- **Framework**: Next.js 14 with App Router
+- **Styling**: Tailwind CSS with custom components
+- **State Management**: Zustand for client-side state
+- **Authentication**: NextAuth.js integration
+- **Testing**: Vitest for unit and integration tests
 
-- Node.js (v18+ recommended)
-- Python 3.10+
-- [Vercel](https://vercel.com/) account (for frontend)
-- [Render](https://render.com/) account (for backend)
-- [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) or your own MongoDB instance
-- Hugging Face API key
-- Google/GitHub OAuth credentials
+### Backend (FastAPI)
+- **Framework**: FastAPI with async support
+- **Database**: MongoDB with PyMongo
+- **AI Integration**: Hugging Face and OpenAI APIs
+- **Scraping**: Selenium with Chrome automation
+- **Testing**: pytest with coverage reporting
 
----
+### CI/CD Pipeline
+- **Automated Testing**: Linting, unit tests, and integration tests
+- **Security Scanning**: Dependency vulnerability checks and code analysis
+- **Containerization**: Docker multi-stage builds
+- **Deployment**: Automated staging and production deployments
+- **Monitoring**: Comprehensive logging and error tracking
 
-## 2. Environment Variables
-
-### Frontend (`.env.local` for Vercel)
-```
-NEXTAUTH_URL=https://your-vercel-domain.vercel.app
-NEXTAUTH_SECRET=your_nextauth_secret
-GITHUB_ID=your_github_client_id
-GITHUB_SECRET=your_github_client_secret
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-MONGODB_URI=your_mongodb_connection_string
-HUGGINGFACE_API_KEY=your_huggingface_api_key
-BACKEND_API_URL=https://your-backend-on-render.com
-```
-
-### Backend (`.env` for Render or local)
-```
-MONGODB_URI=your_mongodb_connection_string
-HUGGINGFACE_API_KEY=your_huggingface_api_key
-FRONTEND_URL=https://your-vercel-domain.vercel.app
-```
-
----
-
-## 3. Local Development
+## 🛠️ Tech Stack
 
 ### Frontend
-```bash
-cd /path/to/LinkPilot
-npm install
-npm run dev
-```
+- Next.js 14
+- React 19
+- Tailwind CSS
+- Zustand
+- NextAuth.js
+- Vitest
 
 ### Backend
-```bash
-cd /path/to/LinkPilot/linkedin-scraper-api
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
-```
+- FastAPI
+- Python 3.11
+- MongoDB
+- Selenium
+- Hugging Face API
+- OpenAI API
 
----
+### DevOps
+- GitHub Actions
+- Docker & Docker Compose
+- Vercel (Frontend)
+- Railway (Backend)
+- MongoDB Atlas
 
-## 4. Deployment
+## 📦 Installation
 
-### 4.1 Frontend (Vercel)
-1. Push your code to GitHub.
-2. Go to [Vercel](https://vercel.com/) and import your GitHub repo.
-3. Set environment variables in Vercel dashboard (`.env.local` values above).
-4. Deploy. Vercel will build and host your Next.js app.
-5. After deployment, update your backend's `FRONTEND_URL` to your Vercel domain.
+### Prerequisites
+- Node.js 18+
+- Python 3.11+
+- MongoDB
+- Docker (optional)
 
-### 4.2 Backend (Render)
-1. Push `/linkedin-scraper-api` to a separate GitHub repo (or use monorepo, but set root to this folder).
-2. Go to [Render](https://render.com/), create a new **Web Service**.
-3. Connect your repo, set build command:
+### Quick Start
+
+1. **Clone the repository**
    ```bash
+   git clone https://github.com/your-username/LinkPilot.git
+   cd LinkPilot
+   ```
+
+2. **Install dependencies**
+   ```bash
+   # Frontend
+   npm install
+   
+   # Backend
+   cd linkedin-scraper-api
    pip install -r requirements.txt
    ```
-   and start command:
+
+3. **Set up environment variables**
    ```bash
-   uvicorn main:app --host 0.0.0.0 --port 10000
+   cp env.example .env.local
+   # Edit .env.local with your API keys
    ```
-   (or your preferred port)
-4. Set environment variables in Render dashboard (`.env` values above).
-5. Deploy. Render will build and host your FastAPI backend.
-6. After deployment, update your frontend's `BACKEND_API_URL` to your Render backend URL.
+
+4. **Start development servers**
+   ```bash
+   # Frontend (Terminal 1)
+   npm run dev
+   
+   # Backend (Terminal 2)
+   cd linkedin-scraper-api
+   python -m uvicorn main:app --reload
+   ```
+
+### Docker Setup
+
+```bash
+# Start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+```
+
+## 🧪 Testing
+
+### Frontend Tests
+```bash
+# Run all tests
+npm run test:run
+
+# Run with UI
+npm run test:ui
+
+# Run integration tests
+npm run test:integration
+```
+
+### Backend Tests
+```bash
+cd linkedin-scraper-api
+
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=. --cov-report=html
+```
+
+### Code Quality
+```bash
+# Frontend linting
+npm run lint
+npm run format:check
+
+# Backend linting
+cd linkedin-scraper-api
+black .
+isort .
+flake8 .
+```
+
+## 🚀 Deployment
+
+### CI/CD Pipeline
+
+This project includes a comprehensive CI/CD pipeline with:
+
+- **Automated Testing**: Linting, unit tests, and integration tests
+- **Security Scanning**: Dependency vulnerability checks
+- **Containerization**: Docker image building and pushing
+- **Deployment**: Automated staging and production deployments
+
+### Manual Deployment
+
+1. **Frontend (Vercel)**
+   ```bash
+   npm run build
+   vercel --prod
+   ```
+
+2. **Backend (Railway)**
+   ```bash
+   cd linkedin-scraper-api
+   railway up
+   ```
+
+3. **Docker Deployment**
+   ```bash
+   docker-compose -f docker-compose.prod.yml up -d
+   ```
+
+## 📚 Documentation
+
+- [API Documentation](docs/api-architecture.md)
+- [Design Guidelines](docs/design-guidelines.md)
+- [CI/CD Setup](docs/ci-cd-setup.md)
+- [Development Guide](docs/dev_plan.md)
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Development Standards
+
+- Follow ESLint and Prettier configurations
+- Write comprehensive tests
+- Update documentation
+- Follow conventional commit messages
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- LinkedIn for the professional networking platform
+- Hugging Face for AI model hosting
+- OpenAI for advanced language models
+- The open-source community for amazing tools and libraries
+
+## 📞 Support
+
+- **Issues**: [GitHub Issues](https://github.com/your-username/LinkPilot/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/your-username/LinkPilot/discussions)
+- **Documentation**: [Project Wiki](https://github.com/your-username/LinkPilot/wiki)
 
 ---
 
-## 5. Production Checklist
-- [ ] All environment variables set correctly
-- [ ] MongoDB Atlas IP whitelist includes both Vercel and Render
-- [ ] OAuth credentials match deployed domains
-- [ ] Hugging Face API key is valid
-- [ ] CORS settings allow frontend-backend communication
-- [ ] Test login, chat, and all major flows in production
-
----
-
-## 6. Useful Scripts
-- `npm run dev` — Start Next.js frontend locally
-- `npm run build && npm start` — Production build locally
-- `uvicorn main:app --reload` — Start FastAPI backend locally
-
----
-
-## 7. Troubleshooting
-- **Auth issues:** Check OAuth callback URLs and secrets
-- **API errors:** Check backend logs in Render dashboard
-- **CORS errors:** Ensure both frontend and backend allow each other's domains
-- **MongoDB errors:** Check connection string, IP whitelist, and user permissions
-
----
-
-## 8. Contact & Support
-- For issues, open a GitHub issue or contact the maintainer.
-- For deployment help, see [Vercel Docs](https://vercel.com/docs) and [Render Docs](https://render.com/docs).
-
----
-
-**Enjoy using LinkPilot!** 
+**Built with ❤️ for professional networking automation** 

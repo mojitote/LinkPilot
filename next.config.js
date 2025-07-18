@@ -1,10 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-    images: {
-      domains: [
-        'media.licdn.com',
-        'cdn.linkedin.com',
+  output: 'standalone',
+  images: {
+    domains: [
+      'media.licdn.com',
+      'cdn.linkedin.com',
       'static.licdn.com',
       'avatars.githubusercontent.com',
     ],
@@ -16,7 +17,7 @@ const nextConfig = {
         pathname: '/**',
       },
     ],
-    },
-  };
-  
+  },
+};
+
 export default nextConfig; 

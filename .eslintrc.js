@@ -1,0 +1,70 @@
+module.exports = {
+  extends: [
+    'next/core-web-vitals',
+    'prettier'
+  ],
+  plugins: ['prettier'],
+  rules: {
+    'prettier/prettier': 'error',
+    'no-unused-vars': 'warn',
+    'no-console': 'warn',
+    'prefer-const': 'error',
+    'no-var': 'error',
+    'object-shorthand': 'error',
+    'prefer-template': 'error',
+    'template-curly-spacing': 'error',
+    'arrow-spacing': 'error',
+    'no-duplicate-imports': 'error',
+    'no-useless-rename': 'error',
+    'prefer-destructuring': 'warn',
+    'prefer-arrow-callback': 'error',
+    'no-param-reassign': 'warn',
+    'no-return-assign': 'error',
+    'no-self-compare': 'error',
+    'no-unmodified-loop-condition': 'error',
+    'no-useless-call': 'error',
+    'no-useless-concat': 'error',
+    'no-useless-return': 'error',
+    'require-await': 'error',
+    'yoda': 'error',
+    'eqeqeq': 'error',
+    'curly': 'error',
+    'brace-style': 'error',
+    'comma-dangle': ['error', 'never'],
+    'comma-spacing': 'error',
+    'comma-style': 'error',
+    'indent': ['error', 2],
+    'key-spacing': 'error',
+    'keyword-spacing': 'error',
+    'linebreak-style': 'error',
+    'max-len': ['warn', { 'code': 100, 'ignoreUrls': true }],
+    'no-multiple-empty-lines': ['error', { 'max': 1 }],
+    'no-trailing-spaces': 'error',
+    'object-curly-spacing': 'error',
+    'quotes': ['error', 'single'],
+    'semi': 'error',
+    'space-before-blocks': 'error',
+    'space-before-function-paren': 'error',
+    'space-in-parens': 'error',
+    'space-infix-ops': 'error',
+    'spaced-comment': 'error'
+  },
+  env: {
+    browser: true,
+    es2021: true,
+    node: true
+  },
+  parserOptions: {
+    ecmaVersion: 'latest',
+    sourceType: 'module'
+  },
+  ignorePatterns: [
+    'node_modules/',
+    '.next/',
+    'out/',
+    'build/',
+    'dist/',
+    '*.config.js',
+    '*.config.ts'
+  ]
+}; 
